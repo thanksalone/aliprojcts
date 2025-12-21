@@ -1,0 +1,3 @@
+for create much of Product us fake install faker
+    ... npm i --save-dev @faker-js/faker
+    

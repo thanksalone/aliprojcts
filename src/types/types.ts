@@ -12,11 +12,11 @@ export interface NewUserRequestBody {
 
 export interface NewProductRequestBody {
     // id?:string;
-    name?: string;
-    photo?: string;
-    category?: string;
-    price?: number;
-    stock?: number;
+    name: string;
+    photo: string;
+    category: string;
+    price: number;
+    stock: number;
  
 }
 
@@ -27,5 +27,23 @@ export type ControllerType = (
     req: Request,
      res: Response,
       next: NextFunction) => 
-    Promise<void | Response<any, Record<string, any>>>
+    Promise<void | Response<any, Record<string, any>>> 
+
+
+export type SearcgRequestQuery = {
+    search?: string;
+    price?: number;
+    category?: string;
+    sort?: string;
+    page?: number;
+}
+
+export interface BaseQuery {
+       name?: {
+      $regex: string;
+      $option: string;
+    };
+    price?: {$lte: number};
+    category?:string;
     
+}
