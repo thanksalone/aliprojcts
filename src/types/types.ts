@@ -36,14 +36,16 @@ export type SearcgRequestQuery = {
     category?: string;
     sort?: string;
     page?: number;
+    id?:string
 }
 
 export interface BaseQuery {
        name?: {
       $regex: string;
-      $option: string;
+      $options: string;
     };
     price?: {$lte: number};
     category?:string;
+    _id?:string;
     
 }

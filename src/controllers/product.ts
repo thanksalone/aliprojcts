@@ -5,6 +5,8 @@ import { Product } from "../models/product.js";
 import { rm } from "fs";
 import ErrorHandler from "../utils/utility-class.js";
 import { count } from "console";
+import mongoose from "mongoose";
+import { faker } from "@faker-js/faker";
 
 export const newProduct = TryCatch(async(
     req:Request<{},{},NewProductRequestBody>,
@@ -107,7 +109,7 @@ export const newProduct = TryCatch(async(
  
  
 export const updateProduct = TryCatch(async(req,res,next)=>{
-  const id = req.params;
+  const {id} = req.params;
   console.log(id)
   console.log("BODY:", req.body);
 console.log("FILE:", req.file);
@@ -135,6 +137,7 @@ console.log("FILE:", req.file);
    return res.status(200).json({
      success: true,
      message: "Product updated SuccessfullY Good",
+     product,
    })
  }) 
 
@@ -201,7 +204,7 @@ console.log("FILE:", req.file);
 
 
  export const getAllProducts = TryCatch(async(req:Request<{},{},{},SearcgRequestQuery>,res,next)=>{
-  const {search, sort, category, price} = req.query;
+  const {search, sort, category, price, id} = req.query;
   
   const page = Number(req.query.page) || 1;
   const limit = Number(process.env.PRODUCT_PER_PAGE) || 8;
@@ -209,9 +212,19 @@ console.log("FILE:", req.file);
   
   const baseQuery:BaseQuery = {}
 
-  if(search) baseQuery.name = {$regex: search, $option:"i"};
+  if(search) baseQuery.name = {$regex: search, $options: 'i'};
   if(price) baseQuery.price = {$lte: Number(price)};
   if(category) baseQuery.category = category;
+  if (id) {
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      baseQuery._id = id;
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid product ID'
+      });
+    }
+  }
    
 
   // const products = await Product.find(baseQuery).sort(
@@ -241,37 +254,50 @@ productPromise,Product.find(baseQuery)
 
 
 
- ////use of faker to create random products in one click
+//  //use of faker to create random products in one click
+// const generateRandomProducts = async (count: number = 10): Promise<void> => {
+//   try {
+//     const products = [];
 
-//  const generateRandomProducts = async(count:number=10)=>{
-//   const products: [];
+//     for (let i = 0; i < count; i++) {
+//       const product = {
+//         name: faker.commerce.productName(),
+//         photo: "uploads/26c47cad-197a-4bfd-aded-e1f7efbc2a59.png",
+//         price: faker.commerce.price({ min: 1500, max: 80000, dec: 0 }),
+//         stock: faker.number.int({ min: 0, max: 100 }), // Fixed: faker.commerce.stock doesn't exist
+//         category: faker.commerce.department(),
+//         description: faker.commerce.productDescription(), // Added description
+//         createdAt: new Date(faker.date.past()),
+//         updatedAt: new Date(faker.date.recent()),
+//         __v: 0,
+//       };
+//       products.push(product);
+//     }
 
-//   for (let i = 0; i < count; i++){
-//     const product = {
-//       name: faker.commerce.productName(),
-//       photo: "",
-//       price: faker.commerce.price({min: 1500,max: 80000, dec: 0}),
-//       stock: faker.commerce.stock({min: 0,max: 100,dec:0}),
-//       category: faker.commerce.department(),
-//       createdAt: new Date(faker.date.past()),
-//     updatedAt: new Date(faker.date.recent()),
-//     __v:0,
-//     };
-//     products.push(product);
-//     console.log({success: true});
-//   };
-//   generateRandomProducts(40);
-//  }
-
-
-//  const deleteRandomProducts = async(count:number = 10) => {
-//   const products = await Product.find({}).skip(2);
-
-//   for (let i = 0; i < products.length; i++){
-//     const product = products[i];
-//     await product.deleteOne();
+//     // Insert all products at once for better performance
+//     await Product.insertMany(products);
+    
+//     console.log(`✅ Successfully generated ${count} products`);
+    
+//   } catch (error) {
+//     console.error('❌ Error generating products:', error);
 //   }
-//   console.log({success: true, message: "All products deleted except two 02 left"});
-//  }
 
-// //  deleteRandomProducts(38);
+  
+
+// };
+
+// // Call the function
+// generateRandomProducts(10);
+
+ const deleteRandomProducts = async(count:number = 10) => {
+  const products = await Product.find({}).skip(2);
+
+  for (let i = 0; i < products.length; i++){
+    const product = products[i];
+    await product.deleteOne();
+  }
+  console.log({success: true, message: "All products deleted except two 02 left"});
+ }
+
+ deleteRandomProducts(200000);
