@@ -49,3 +49,9 @@ export interface BaseQuery {
     _id?:string;
     
 }
+
+export type inValidDateCacheType = {
+    product?: boolean;
+    order?: boolean;
+    admin?:boolean;
+}

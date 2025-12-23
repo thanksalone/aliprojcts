@@ -8,36 +8,7 @@ import { count } from "console";
 import mongoose from "mongoose";
 import { faker } from "@faker-js/faker";
 import { myCache } from "../app.js";
-
-export const newProduct = TryCatch(async(
-    req:Request<{},{},NewProductRequestBody>,
-    res,
-    next,
-)=>{
-   const {name, price ,category, stock}=req.body;
-
-   const photo = req.file;
-    if(!photo) return next(new ErrorHandler("plz Add Photo", 404));
-   if(!name || !price || !stock || !category){
-    rm(photo.path, ()=>{
-      console.log("deleted");
-    });
-       return next(new ErrorHandler("plz add All fields", 404));
-
-   }
-
-   await Product.create({
-    name,
-    photo : photo?.path,
-    category: category.toLowerCase(),
-    price,
-    stock,
- })
- return res.status(201).json({
-    success: true,
-    message: "Product Created Successfully",
- })
-})
+import { inValidDateCache } from "../utils/features.js";
 
 
 // Revalidate on new , update or delete & new order
@@ -77,7 +48,7 @@ export const newProduct = TryCatch(async(
     product,
   })
  })
-
+// Revalidate on new , update or delete & new order
  export const getsingleProduct = TryCatch(async(req,res,next)=>{
   const id = req.params.id;
 
@@ -105,6 +76,8 @@ export const newProduct = TryCatch(async(
     });
 
   await product.deleteOne();
+  ///prudct re validate remove from browser
+  await inValidDateCache({product:true});
 
   return res.status(200).json({
     success: true,
@@ -132,6 +105,9 @@ console.log("FILE:", req.file);
   const {name, price, stock, category} = req.body; 
    const photo = req.file;
   const product = await Product.findById(id);
+   ///prudct re validate remove from browser
+  await inValidDateCache({product:true});
+
 
   if (!product) return next(new ErrorHandler("product not found", 404));
 
@@ -268,6 +244,37 @@ productPromise,Product.find(baseQuery)
     totalPage,
   })
  }) 
+
+ 
+export const newProduct = TryCatch(async(
+    req:Request<{},{},NewProductRequestBody>,
+    res,
+    next,
+)=>{
+   const {name, price ,category, stock}=req.body;
+
+   const photo = req.file;
+    if(!photo) return next(new ErrorHandler("plz Add Photo", 404));
+   if(!name || !price || !stock || !category){
+    rm(photo.path, ()=>{
+      console.log("deleted");
+    });
+       return next(new ErrorHandler("plz add All fields", 404));
+
+   }
+
+   await Product.create({
+    name,
+    photo : photo?.path,
+    category: category.toLowerCase(),
+    price,
+    stock,
+ })
+ return res.status(201).json({
+    success: true,
+    message: "Product Created Successfully",
+ })
+})
 
 
 
