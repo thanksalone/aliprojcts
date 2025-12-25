@@ -53,5 +53,36 @@ export interface BaseQuery {
 export type inValidDateCacheType = {
     product?: boolean;
     order?: boolean;
-    admin?:boolean;
+    admin?: boolean;
+    userId?: string;
+}
+
+
+///order ... Data
+export type orderItemsType = {
+    name: string,
+    photo: string,
+    price: number,
+    quantity: number,
+    productId: string,
+};
+
+export type shippingInfoType = {
+    adress: string,
+    city: string,
+    country: string,
+    state: string,
+    pinCode: number,
+   
+};
+export interface newOrderRequestBody {
+    shippingInfo: shippingInfoType;
+    user:string;
+    subTotal: number;
+    tax:number,
+    shippingCharges: number,
+    discount: number,
+    total: number,
+    orderItems: orderItemsType[],
+
 }

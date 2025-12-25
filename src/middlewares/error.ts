@@ -7,9 +7,11 @@ import { ControllerType } from "../types/types.js";
 export const errorMidleware = (err:ErrorHandler,reqr:Request<any>,res:Response,next:NextFunction) => {
     err.message ||= "internal Server Error";
     err.statusCode ||= 500;
+
+    if(err.name === "CastError") err.message = "Invalid ID";
     return res.status(err.statusCode).json({
         sucess: true,
-        message: err.message
+        message: err.message,
 
     })
 };
