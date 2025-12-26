@@ -2,56 +2,62 @@ import { TryCatch } from "../middlewares/error.js";
 import { Product } from "../models/product.js";
 import { rm } from "fs";
 import ErrorHandler from "../utils/utility-class.js";
-import mongoose from "mongoose";
-export const newProduct = TryCatch(async (req, res, next) => {
-    const { name, price, category, stock } = req.body;
-    const photo = req.file;
-    if (!photo)
-        return next(new ErrorHandler("plz Add Photo", 404));
-    if (!name || !price || !stock || !category) {
-        rm(photo.path, () => {
-            console.log("deleted");
-        });
-        return next(new ErrorHandler("plz add All fields", 404));
-    }
-    await Product.create({
-        name,
-        photo: photo?.path,
-        category: category.toLowerCase(),
-        price,
-        stock,
-    });
-    return res.status(201).json({
-        success: true,
-        message: "Product Created Successfully",
-    });
-});
+import { myCache } from "../app.js";
+import { inValidDateCache } from "../utils/features.js";
+// Revalidate on new , update or delete & new order
 export const latestProduct = TryCatch(async (req, res, next) => {
-    const product = await Product.find().sort({ createdAt: -1 }).limit(5);
+    let product;
+    if (myCache.has("latestProducts"))
+        product = JSON.parse(myCache.get("latestProducts"));
+    else {
+        product = await Product.find().sort({ createdAt: -1 }).limit(5);
+        myCache.set("latestProducts", JSON.stringify(product));
+    }
     return res.status(200).json({
         success: true,
         product,
     });
 });
+// Revalidate on new , update or delete & new order
 export const categories = TryCatch(async (req, res, next) => {
-    const category = await Product.distinct("category");
+    let category;
+    if (myCache.has("latestProducts"))
+        category = JSON.parse(myCache.get("Categories"));
+    else {
+        category = await Product.distinct("category");
+        myCache.set("Categories", JSON.stringify(category));
+    }
     return res.status(200).json({
         success: true,
         category,
     });
 });
+// Revalidate on new , update or delete & new order
 export const getAdminProducts = TryCatch(async (req, res, next) => {
-    const product = await Product.find({});
+    let product;
+    if (myCache.has("Adminproducts"))
+        product = JSON.parse(myCache.get("Adminproducts"));
+    else {
+        product = await Product.find({});
+        myCache.set("Adminproducts", JSON.stringify(product));
+    }
     return res.status(200).json({
         success: true,
         product,
     });
 });
+// Revalidate on new , update or delete & new order
 export const getsingleProduct = TryCatch(async (req, res, next) => {
     const id = req.params.id;
-    const product = await Product.findById(id);
-    if (!product)
-        return next(new ErrorHandler("product not found", 404));
+    let product;
+    if (myCache.has(`product.${id}`))
+        product = JSON.parse(myCache.get(`product.${id}`));
+    else {
+        product = await Product.findById(id);
+        if (!product)
+            return next(new ErrorHandler("product not found", 404));
+        myCache.set(`product.${id}`, JSON.stringify(product));
+    }
     return res.status(200).json({
         success: true,
         product,
@@ -66,6 +72,8 @@ export const deleteProduct = TryCatch(async (req, res, next) => {
         console.log("old photo deleted deleted");
     });
     await product.deleteOne();
+    ///prudct re validate remove from browser
+    await inValidDateCache({ product: true });
     return res.status(200).json({
         success: true,
         message: "Product deleted successfully",
@@ -79,6 +87,8 @@ export const updateProduct = TryCatch(async (req, res, next) => {
     const { name, price, stock, category } = req.body;
     const photo = req.file;
     const product = await Product.findById(id);
+    ///prudct re validate remove from browser
+    await inValidDateCache({ product: true });
     if (!product)
         return next(new ErrorHandler("product not found", 404));
     if (photo) {
@@ -164,17 +174,18 @@ export const getAllProducts = TryCatch(async (req, res, next) => {
         baseQuery.price = { $lte: Number(price) };
     if (category)
         baseQuery.category = category;
-    if (id) {
-        if (mongoose.Types.ObjectId.isValid(id)) {
-            baseQuery._id = id;
-        }
-        else {
-            return res.status(400).json({
-                success: false,
-                message: 'Invalid product ID'
-            });
-        }
-    }
+    if (id)
+        baseQuery._id = id;
+    // if (id) {
+    //   if (mongoose.Types.ObjectId.isValid(id)) {
+    //     baseQuery._id = id;
+    //   } else {
+    //     return res.status(400).json({
+    //       success: false,
+    //       message: 'Invalid product ID'
+    //     });
+    //   }
+    // }
     // const products = await Product.find(baseQuery).sort(
     //   sort && {price: sort === "asc" ? 1 : -1}
     // ).limit(limit).skip(skip);
@@ -188,6 +199,29 @@ export const getAllProducts = TryCatch(async (req, res, next) => {
         success: true,
         products,
         totalPage,
+    });
+});
+export const newProduct = TryCatch(async (req, res, next) => {
+    const { name, price, category, stock } = req.body;
+    const photo = req.file;
+    if (!photo)
+        return next(new ErrorHandler("plz Add Photo", 404));
+    if (!name || !price || !stock || !category) {
+        rm(photo.path, () => {
+            console.log("deleted");
+        });
+        return next(new ErrorHandler("plz add All fields", 404));
+    }
+    await Product.create({
+        name,
+        photo: photo?.path,
+        category: category.toLowerCase(),
+        price,
+        stock,
+    });
+    return res.status(201).json({
+        success: true,
+        message: "Product Created Successfully",
     });
 });
 //  //use of faker to create random products in one click
@@ -217,12 +251,12 @@ export const getAllProducts = TryCatch(async (req, res, next) => {
 // };
 // // Call the function
 // generateRandomProducts(10);
-const deleteRandomProducts = async (count = 10) => {
-    const products = await Product.find({}).skip(2);
-    for (let i = 0; i < products.length; i++) {
-        const product = products[i];
-        await product.deleteOne();
-    }
-    console.log({ success: true, message: "All products deleted except two 02 left" });
-};
-deleteRandomProducts(200000);
+//  const deleteRandomProducts = async(count:number = 10) => {
+//   const products = await Product.find({}).skip(2);
+//   for (let i = 0; i < products.length; i++){
+//     const product = products[i];
+//     await product.deleteOne();
+//   }
+//   console.log({success: true, message: "All products deleted except two 02 left"});
+//  }
+//  deleteRandomProducts(200000);
