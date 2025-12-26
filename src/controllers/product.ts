@@ -235,13 +235,14 @@ const [products,filteredProducts] = await Promise.all([
 productPromise,Product.find(baseQuery)
 ]);
 
-  
-  const totalPage = Math.ceil(filteredProducts.length/limit);
+const totalProduts = filteredProducts.length;
+  const totalPage = Math.ceil(totalProduts/limit);
   
   return res.status(200).json({
     success: true,
     products,
     totalPage,
+    totalProduts,
   })
  }) 
 
@@ -270,6 +271,10 @@ export const newProduct = TryCatch(async(
     price,
     stock,
  })
+
+   ///prudct re validate remove from browser
+  await inValidDateCache({product:true});
+
  return res.status(201).json({
     success: true,
     message: "Product Created Successfully",
@@ -278,7 +283,7 @@ export const newProduct = TryCatch(async(
 
 
 
-//  //use of faker to create random products in one click
+ // //use of faker to create random products in one click
 // const generateRandomProducts = async (count: number = 10): Promise<void> => {
 //   try {
 //     const products = [];
@@ -312,7 +317,7 @@ export const newProduct = TryCatch(async(
 // };
 
 // // Call the function
-// generateRandomProducts(10);
+// generateRandomProducts(100);
 
 //  const deleteRandomProducts = async(count:number = 10) => {
 //   const products = await Product.find({}).skip(2);

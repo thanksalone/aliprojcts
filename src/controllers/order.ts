@@ -3,24 +3,28 @@ import { TryCatch } from "../middlewares/error.js";
 import { newOrderRequestBody } from "../types/types.js";
 import { Order } from "../models/order.js";
 import { inValidDateCache, reduceStock } from "../utils/features.js";
-import { Product } from "../models/product.js";
+// import { Product } from "../models/product.js";
 import ErrorHandler from "../utils/utility-class.js";
 import { myCache } from "../app.js";
+import { Product } from "../models/product.js";
 
 
 export const newOrder = TryCatch(async(req:Request<{},{},newOrderRequestBody>,res,next)=>{
-    const {shippingInfo,orderItems,user,subTotal,tax,shippingCharges,discount,total} = req.body;
+    const {shippingInfo,orderItems,user,subTotal,tax,total} = req.body;
+    
 
     if (!shippingInfo || !orderItems || !user || !subTotal || !tax
         //  || !shippingCharges  || !discount
         || !total) return next(new ErrorHandler("Plz Add All Field", 400));
-        
-        
+    const proct = await Product.findById(orderItems[0].productId);
+    if(proct && proct.stock < orderItems[0].quantity){
+        return next(new ErrorHandler(`Only ${proct.stock} items are available in stock, That are less than you order Quantity`, 400));
+    }           
     await Order.create({
-        shippingInfo,orderItems,user,subTotal,tax,shippingCharges,discount,total
+        shippingInfo,orderItems,user,subTotal,tax,total
     });
-
     await reduceStock(orderItems);
+      
 
     await inValidDateCache({product: true, order: true, admin: true, userId: user});
 

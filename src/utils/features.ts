@@ -37,11 +37,13 @@ export const inValidDateCache = async({product, order, admin,userId}:inValidDate
 
 
 export const reduceStock = async(orderItems: orderItemsType[]) => {
+    console.log("order cut Successfullly");  
     for (let i = 0; i < orderItems.length; i++) {
         const order = orderItems[i];
         const product = await Product.findById(order.productId);
         if (!product) throw new Error("Product Note Found");  
         product.stock -= order.quantity;
-        await product.save();      
+        await product.save(); 
+        
     }
 }

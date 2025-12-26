@@ -68,7 +68,7 @@ export type orderItemsType = {
 };
 
 export type shippingInfoType = {
-    adress: string,
+    address: string,
     city: string,
     country: string,
     state: string,
@@ -80,8 +80,8 @@ export interface newOrderRequestBody {
     user:string;
     subTotal: number;
     tax:number,
-    shippingCharges: number,
-    discount: number,
+    // shippingCharges: number,
+    // discount: number,
     total: number,
     orderItems: orderItemsType[],
 
