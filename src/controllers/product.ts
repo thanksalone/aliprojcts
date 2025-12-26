@@ -77,7 +77,8 @@ import { inValidDateCache } from "../utils/features.js";
 
   await product.deleteOne();
   ///prudct re validate remove from browser
-  await inValidDateCache({product:true});
+   await inValidDateCache({product:true, productId: String(product._id)});
+
 
   return res.status(200).json({
     success: true,
@@ -106,7 +107,7 @@ console.log("FILE:", req.file);
    const photo = req.file;
   const product = await Product.findById(id);
    ///prudct re validate remove from browser
-  await inValidDateCache({product:true});
+  await inValidDateCache({product:true, productId: String(product._id)});
 
 
   if (!product) return next(new ErrorHandler("product not found", 404));

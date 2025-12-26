@@ -55,6 +55,8 @@ export type inValidDateCacheType = {
     order?: boolean;
     admin?: boolean;
     userId?: string;
+    orderId?: string;
+    productId?: string;
 }
 
 
@@ -64,7 +66,7 @@ export type orderItemsType = {
     photo: string,
     price: number,
     quantity: number,
-    productId: string,
+    productId: string | string[],
 };
 
 export type shippingInfoType = {

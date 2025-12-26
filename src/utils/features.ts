@@ -13,22 +13,28 @@ export const connectDB = (url:string) => {
 
 
 
-export const inValidDateCache = async({product, order, admin,userId}:inValidDateCacheType) => {
+export const inValidDateCache = async({product, order, admin,userId,orderId,productId}:inValidDateCacheType) => {
     if (product){
-        const productKeys: string[] =["latestProducts","Adminproducts","Categories",];
-        const product = await Product.find({}).select("_id");
-        product.forEach((i) => {
-        productKeys.push(`product-${i._id}`);
-        })
+        const productKeys: string[] =["latestProducts","Adminproducts","Categories"];
+       if(typeof productId === "string") productKeys.push(`product-${productId}`);
+       if(typeof productId === "object")
+        {
+             productId.forEach((i)=>productKeys.push(`product-${productId}`))
+            console.log("features product array push working")
+            }
+        // const product = await Product.find({}).select("_id");
+        // product.forEach((i) => {
+        // productKeys.push(`product-${i._id}`);
+        // })
       myCache.del(productKeys)
      }
     if (order){ 
-        const orderKyes: string[] = ["AllOrder",`my-orders-${userId}`];
-        const orders = await Order.find({}).select("_id");
+        const orderKyes: string[] = ["AllOrder",`my-orders-${userId}`,`order-${orderId}`];
+        // const orders = await Order.find({}).select("_id");
 
-        orders.forEach((i)=> {
-            orderKyes.push(`order-${i._id}`);
-        });
+        // orders.forEach((i)=> {
+        //     orderKyes.push();
+        // });
         
         myCache.del(orderKyes);
     }

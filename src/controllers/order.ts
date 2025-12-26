@@ -20,13 +20,19 @@ export const newOrder = TryCatch(async(req:Request<{},{},newOrderRequestBody>,re
     if(proct && proct.stock < orderItems[0].quantity){
         return next(new ErrorHandler(`Only ${proct.stock} items are available in stock, That are less than you order Quantity`, 400));
     }           
-    await Order.create({
+    const orderd await Order.create({
         shippingInfo,orderItems,user,subTotal,tax,total
     });
     await reduceStock(orderItems);
       
 
-    await inValidDateCache({product: true, order: true, admin: true, userId: user});
+    await inValidDateCache({
+        product: true,
+         order: true,
+          admin: true,
+           userId: user,
+            productId: orderd.orderItems.map((i)=>String(i.productId))
+        });
 
     res.status(201).json({
         success: true,
@@ -124,7 +130,8 @@ export const ProcessOrder = TryCatch(async(req,res,next)=>{
     const nowStatus = await Order.findById(id);
     const newOutput = nowStatus?.status;
 
-    await inValidDateCache({product: true, order: true, admin: true, userId: order.user});
+    await inValidDateCache({product: true, order: true, admin: true, userId: order.user,orderId: String(order._id)});
+
 
     res.status(201).json({
         success: true,
@@ -145,7 +152,7 @@ export const deleteOrder = TryCatch(async(req,res,next)=>{
     await order.deleteOne();
 
  
-    await inValidDateCache({product: true, order: true, admin: true, userId: order.user});
+    await inValidDateCache({product: true, order: true, admin: true, userId: order.user,orderId: String(order._id)});
 
     res.status(201).json({
         success: true,
