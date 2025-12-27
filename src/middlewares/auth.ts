@@ -11,10 +11,10 @@ if (!id) return next (new ErrorHandler("Sale Login kr pehle", 401));
 
 const user = await User.findById(id);
 
-if(!user) return next(new ErrorHandler("Sale Fake iD dalta hai", 401));
+if(!user) return next(new ErrorHandler("Sale Fake iD dalta hai", 402));
 
 if (user.role !== "admin")
-    return next(new ErrorHandler("saale Aukat nahi hai teri", 401));
+    return next(new ErrorHandler("saale Aukat nahi hai teri", 403));
 
 next();
 

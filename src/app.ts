@@ -6,6 +6,7 @@ import userRoute from "./routes/user.js";
 import productRoute from "./routes/product.js";
 import orderRoute from "./routes/orders.js";
 import payementRoute from "./routes/orders.js";
+import dashboardRoute from "./routes/stats.js";
 import { connectDB } from "./utils/features.js";
 import { errorMidleware } from "./middlewares/error.js";
 import { config } from "dotenv";
@@ -42,6 +43,8 @@ app.use("/api/v1/order", orderRoute);
 //Payement Routes
 app.use("/api/v1/payement", payementRoute);
 
+//Dashboard or stats Routes
+app.use("/api/v1/dashboard", dashboardRoute);
 
 
 
